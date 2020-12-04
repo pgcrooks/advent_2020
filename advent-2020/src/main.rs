@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::env;
 use std::fs;
 use std::process;
@@ -11,12 +12,12 @@ fn main() {
     });
 
     println!("Advent 2020");
-    println!("Input file: {:?}", config.filename);
+    println!("Reading from {}", config.filename);
 
-    let contents = fs::read_to_string(config.filename)
-        .expect("Something went wrong while reading the file");
-
-    println!("Contents:\n{}", contents);
+    if let Err(e) = run(config) {
+        println!("Application error: {}", e);
+        process::exit(1);
+    }
 }
 
 struct Config {
@@ -36,4 +37,12 @@ impl Config {
 
         Ok(Config { filename })
     }
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let contents = fs::read_to_string(config.filename)?;
+
+    println!("Contents:\n{}", contents);
+
+    Ok(())
 }
