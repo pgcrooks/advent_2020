@@ -85,3 +85,39 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn generate_vector() -> Vec<String> {
+        return vec![
+            "1".to_string(),
+            "2".to_string(),
+            "3".to_string(),
+            "4".to_string(),
+        ];
+    }
+
+    #[test]
+    fn test_find_sum_2_when_found_will_return_tuple() {
+        let data = generate_vector();
+        assert_eq!(find_sum_2(&data[..], 7), Some((3, 4)));
+    }
+    #[test]
+    fn test_find_sum_2_when_not_found_will_return_none() {
+        let data = generate_vector();
+        assert_eq!(find_sum_2(&data[..], 11), None);
+    }
+
+    #[test]
+    fn test_find_sum_3_when_found_will_return_tuple() {
+        let data = generate_vector();
+        assert_eq!(find_sum_3(&data[..], 6), Some((1, 2, 3)));
+    }
+    #[test]
+    fn test_find_sum_3_when_not_found_will_return_none() {
+        let data = generate_vector();
+        assert_eq!(find_sum_3(&data[..], 11), None);
+    }
+}
