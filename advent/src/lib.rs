@@ -32,26 +32,24 @@ fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
     BufReader::new(File::open(filename)?).lines().collect()
 }
 
-fn find_sum_2(numbers: &[String], desired: i32) -> Option<i32> {
+fn find_sum_2(numbers: &[String], desired: i32) -> Option<(i32, i32)> {
     for win in numbers.windows(2) {
         let a: i32 = win[0].parse().unwrap();
         let b: i32 = win[1].parse().unwrap();
         if a + b == desired {
-            println!("find_sum_2 {} + {} = {}", a, b, desired);
-            return Some(a * b)
+            return Some((a, b))
         }
     }
     None
 }
 
-fn find_sum_3(numbers: &[String], desired: i32) -> Option<i32> {
+fn find_sum_3(numbers: &[String], desired: i32) -> Option<(i32, i32, i32)> {
     for win in numbers.windows(3) {
         let a: i32 = win[0].parse().unwrap();
         let b: i32 = win[1].parse().unwrap();
         let c: i32 = win[2].parse().unwrap();
         if a + b + c == desired {
-            println!("find_sum_3 {} + {} + {} = {}", a, b, c, desired);
-            return Some(a * b * c)
+            return Some((a, b, c))
         }
     }
     None
@@ -67,7 +65,8 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     while !done {
         let result = find_sum_2(&lines, desired);
         if let Some(i) = result {
-            println!("Found 2 numbers! Answer = {}", i);
+            println!("Found 2 numbers! {} + {} = {}", i.0, i.1, desired);
+            println!("Answer = {}", i.0 * i.1);
             done = true;
         }
         &lines.shuffle(&mut rng);
@@ -77,7 +76,8 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     while !done {
         let result = find_sum_3(&lines, desired);
         if let Some(i) = result {
-            println!("Found 3 numbers! Answer = {}", i);
+            println!("Found 3 numbers! {} + {} + {} = {}", i.0, i.1, i.2, desired);
+            println!("Answer = {}", i.0 * i.1 * i.2);
             done = true;
         }
         &lines.shuffle(&mut rng);
