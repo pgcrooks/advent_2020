@@ -4,7 +4,7 @@ use std::fs;
 fn main() {
     let args: Vec<String> = env::args().collect();
 
-    let config = parse_config(&args);
+    let config = Config::new(&args);
 
     println!("Advent 2020");
     println!("Input file: {:?}", config.filename);
@@ -19,10 +19,15 @@ struct Config {
     filename: String,
 }
 
-fn parse_config(args: &[String]) -> Config {
-    if args.len() < 2 {
-        panic!("Filename argument required");
+impl Config {
+    fn new(args: &[String]) -> Config {
+        if args.len() < 2 {
+            panic!("Filename argument required");
+        }
+        if args.len() > 2 {
+            panic!("Too many arguments");
+        }
+        let filename = args[1].clone();
+        Config { filename }
     }
-    let filename = args[1].clone();
-    Config { filename }
 }
