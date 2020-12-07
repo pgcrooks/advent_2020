@@ -1,3 +1,9 @@
+use std::{
+    fs::File,
+    io::{self, BufRead, BufReader},
+    path::Path,
+};
+
 pub struct Config {
     pub day: i32,
     pub filename: String,
@@ -19,4 +25,8 @@ impl Config {
 
         Ok(Config { day, filename })
     }
+}
+
+pub fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
+    BufReader::new(File::open(filename)?).lines().collect()
 }

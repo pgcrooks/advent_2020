@@ -3,17 +3,6 @@ use rand::{
     seq::SliceRandom,
 };
 use std::error::Error;
-use std::{
-    fs::File,
-    io::{self, BufRead, BufReader},
-    path::Path,
-};
-
-use advent::Config;
-
-fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
-    BufReader::new(File::open(filename)?).lines().collect()
-}
 
 fn find_sum_2(numbers: &[String], desired: i32) -> Option<(i32, i32)> {
     for win in numbers.windows(2) {
@@ -38,8 +27,8 @@ fn find_sum_3(numbers: &[String], desired: i32) -> Option<(i32, i32, i32)> {
     None
 }
 
-pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let mut lines = lines_from_file(config.filename)?;
+pub fn run(config: advent::Config) -> Result<(), Box<dyn Error>> {
+    let mut lines = advent::lines_from_file(config.filename)?;
 
     let desired = 2020;
 
