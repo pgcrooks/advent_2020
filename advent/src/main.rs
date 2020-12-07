@@ -3,6 +3,8 @@ use std::error::Error;
 use std::process;
 
 mod day_1;
+mod day_2;
+
 use advent::Config;
 
 fn run_help(config: Config) -> Result<(), Box<dyn Error>> {
@@ -19,7 +21,8 @@ fn main() {
         process::exit(1);
     });
 
-    println!("Advent 2020\n=====\n");
+    println!("Advent 2020");
+    println!("===========\n");
     println!("Running Day {}", config.day);
     println!("Reading from {}\n", config.filename);
 
@@ -27,6 +30,7 @@ fn main() {
 
     let runner: DayRunner = match config.day {
         1 => day_1::run,
+        2 => day_2::run,
         _ => run_help,
     };
 
