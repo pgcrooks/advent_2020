@@ -1,24 +1,29 @@
+use std::convert::TryInto;
 use std::error::Error;
 
 use advent::Config;
 
+mod position_mod {
+    pub struct Position {
+        pub x: usize,
+        pub y: usize,
+        right: usize,
+        down: usize,
+    }
+
+    impl Position {
+        pub fn new(right: usize, down: usize) -> Position {
+            Position { x: 0, y: 0, right: right, down: down }
+        }
+
+        pub fn slide(&mut self) {
+            self.x += self.right;
+            self.y += self.down;
+        }
+    }
+}
+
 type Map = Vec<Vec<char>>;
-
-struct Position {
-    x: usize,
-    y: usize,
-}
-
-impl Position {
-    fn origin() -> Position {
-        Position { x: 0, y: 0 }
-    }
-
-    fn slide(&mut self) {
-        self.x += 3;
-        self.y += 1;
-    }
-}
 
 fn read_lines_into_map(lines: Vec<String>) -> Map {
     let number_lines = lines.len();
@@ -39,8 +44,8 @@ fn read_lines_into_map(lines: Vec<String>) -> Map {
     return map;
 }
 
-fn toboggan(map: Map) -> i32 {
-    let mut pos = Position::origin();
+fn toboggan(map: &Map, movement_right: usize, movement_down: usize) -> i32 {
+    let mut pos = position_mod::Position::new(movement_right, movement_down);
     let width = map[0].len();
     let mut tree_count = 0;
 
@@ -63,8 +68,27 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let lines = advent::lines_from_file(config.filename)?;
 
     let map = read_lines_into_map(lines);
-    
-    println!("Found {} trees", toboggan(map));
+
+    let movements = vec![
+        vec![1, 1],
+        vec![3, 1],
+        vec![5, 1],
+        vec![7, 1],
+        vec![1, 2],
+    ];
+
+    let mut total: u64 = 0;
+    for m in movements {
+        let result: u64 = toboggan(&map, m[0], m[1]).try_into().unwrap();
+        if total == 0 {
+            total = result;
+        } else {
+            total *= result;
+        }
+        println!("{},{} Found {} trees", m[0], m[1], result);
+    }
+
+    println!("Answer = {}", total);
 
     Ok(())
 }
@@ -72,6 +96,11 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use position_mod::Position;
+
+    fn create_position() -> Position {
+        return Position::new(3, 1);
+    }
 
     #[test]
     fn test_read_lines_into_map_will_return_map() {
@@ -93,7 +122,7 @@ mod tests {
 
     #[test]
     fn test_position_origin_is_0_0() {
-        let pos = Position::origin();
+        let pos = create_position();
 
         assert_eq!(pos.x, 0);
         assert_eq!(pos.y, 0);
@@ -101,7 +130,7 @@ mod tests {
 
     #[test]
     fn test_position_slide_will_move() {
-        let mut pos = Position::origin();
+        let mut pos = create_position();
 
         assert_eq!(pos.x, 0);
         assert_eq!(pos.y, 0);
@@ -120,7 +149,7 @@ mod tests {
             "#####".to_string()
         ];
 
-        assert_eq!(toboggan(read_lines_into_map(test_data)), 2);
+        assert_eq!(toboggan(&read_lines_into_map(test_data), 3, 1), 2);
     }
 
     #[test]
@@ -135,6 +164,6 @@ mod tests {
             ".....".to_string(),
         ];
 
-        assert_eq!(toboggan(read_lines_into_map(test_data)), 3);
+        assert_eq!(toboggan(&read_lines_into_map(test_data), 3, 1), 3);
     }
 }
