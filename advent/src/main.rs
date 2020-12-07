@@ -11,8 +11,9 @@ fn main() {
         process::exit(1);
     });
 
-    println!("Advent 2020");
-    println!("Reading from {}", config.filename);
+    println!("Advent 2020\n=====\n");
+    println!("Running Day {}", config.day);
+    println!("Reading from {}\n", config.filename);
 
     if let Err(e) = advent::run(config) {
         println!("Application error: {}", e);
