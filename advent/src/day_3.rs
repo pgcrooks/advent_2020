@@ -1,3 +1,4 @@
+use std::io::{self, Write};
 use std::convert::TryInto;
 use std::error::Error;
 
@@ -33,13 +34,14 @@ fn read_lines_into_map(lines: Vec<String>) -> Map {
 
     let mut map: Map = vec![vec!['.'; line_length]; number_lines];
 
-    print!("Read in the map");
+    println!("Read in the map");
     for (index, line) in lines.iter().enumerate() {
         print!(".");
+        io::stdout().flush().unwrap();
         let current_line: Vec<char> = line.chars().collect();
         map[index] = current_line.clone();
     }
-    println!(" Done!");
+    println!("\n\nDone");
 
     return map;
 }
