@@ -69,17 +69,25 @@ fn find_seat(pass: &str) -> Seat {
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let passes = advent::lines_from_file(config.filename)?;
 
-    let mut highest_seat_id = 0;
+    let mut seats: Vec<i32> = vec![];
 
     for pass in passes {
         let seat = find_seat(&pass);
-        let id = generate_seat_id(&seat);
-        if id > highest_seat_id {
-            highest_seat_id = id;
-        }
+        seats.push(generate_seat_id(&seat));
     }
 
-    println!("Highest seat ID is {}", highest_seat_id);
+    // Find the missing seat. Sort into natural order first.
+    seats.sort();
+    let mut i = 1;
+    while i < seats.len() {
+        if seats[i] != seats[i-1] + 1 {
+            break;
+        }
+        i += 1;
+    }
+
+    println!("The highest seat ID is {}.", seats.last().unwrap());
+    println!("My seat ID is {}.", seats[i-1] + 1);
     Ok(())
 }
 
