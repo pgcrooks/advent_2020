@@ -2,6 +2,8 @@ use std::env;
 use std::error::Error;
 use std::process;
 
+use took::Timer;
+
 mod day_1;
 mod day_2;
 mod day_3;
@@ -43,8 +45,10 @@ fn main() {
         _ => run_help,
     };
 
+    let timer = Timer::new();
     if let Err(e) = runner(config) {
         println!("Application error: {}", e);
         process::exit(1);
     }
+    println!("\n<Finished, took {}>", timer.took());
 }
