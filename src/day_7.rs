@@ -21,16 +21,16 @@ impl cmp::PartialEq for Contents {
 
 #[derive(Default, Clone)]
 pub struct Rule {
-    pub outer_colour: String,
-    pub inner_colours: Vec<Contents>,
+    pub bag_colour: String,
+    pub inner_bags: Vec<Contents>,
 }
 
 impl fmt::Display for Rule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "Rule: outer_colour=\"{}\" inner_colours={:?}",
-            self.outer_colour, self.inner_colours
+            "Rule: bag_colour=\"{}\" inner_bags={:?}",
+            self.bag_colour, self.inner_bags
         )
     }
 }
@@ -45,7 +45,7 @@ fn parse_rule(input: &str) -> Rule {
     if re_result.is_some() {
         let outer_group = re_result.unwrap();
 
-        rule.outer_colour = outer_group[1].to_string();
+        rule.bag_colour = outer_group[1].to_string();
 
         let inner_strings: Vec<String> = outer_group[2].split(", ").map(|x| x.to_string()).collect();
         for inner in inner_strings {
@@ -57,7 +57,7 @@ fn parse_rule(input: &str) -> Rule {
                     colour: inner_group[2].to_string(),
                     count: inner_group[1].parse().unwrap_or_default()
                 };
-                rule.inner_colours.push(inner_bag);
+                rule.inner_bags.push(inner_bag);
             }
         }
 
@@ -87,14 +87,14 @@ fn search_for_bag(rules: &Vec<Rule>, search_colour: &str) -> Vec<String> {
     let mut matching_bags: Vec<String> = vec![];
 
     for rule in rules {
-        for inner_bag in &rule.inner_colours {
+        for inner_bag in &rule.inner_bags {
             if inner_bag.colour == search_colour {
                 // Found a match!
                 // println!("Matched {} in {}", search_colour, rule);
-                matching_bags.push(rule.outer_colour.clone());
+                matching_bags.push(rule.bag_colour.clone());
 
                 // Can the outer bag also be contained within another?
-                let mut temp = search_for_bag(&rules, &rule.outer_colour);
+                let mut temp = search_for_bag(&rules, &rule.bag_colour);
                 matching_bags.append(&mut temp);
             }
         }
@@ -113,6 +113,26 @@ fn count_bags(rules: &Vec<Rule>, search_colour: &str) -> usize {
     return matching_bags.len();
 }
 
+fn count_inner_bags(rules: &Vec<Rule>, search_colour: &str) -> i32 {
+    let mut count = 0;
+
+    // println!("Searching for {}", search_colour);
+    for rule in rules {
+        if rule.bag_colour == search_colour {
+            // println!("  found it in {}", rule);
+
+            // Look through the bags it continues
+            for inner in &rule.inner_bags {
+                // println!("Adding {} {} bags.", inner.count, inner.colour);
+                count += inner.count;
+                count += count_inner_bags(rules, &inner.colour) * inner.count;
+            }
+        }
+    }
+
+    return count;
+}
+
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let contents = fs::read_to_string(config.filename)?;
     let rules: Vec<&str> = contents.split('\n').collect();
@@ -121,11 +141,14 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let rule_list = parse_rules(rules);
 
-    let count = count_bags(&rule_list, search_colour);
-
     println!(
         "Number of bags that eventually contain a {} bag is {}",
-        search_colour, count
+        search_colour, count_bags(&rule_list, search_colour)
+    );
+
+    println!(
+        "Number of bags that a {} bag contains is {}",
+        search_colour, count_inner_bags(&rule_list, search_colour)
     );
 
     Ok(())
@@ -142,11 +165,11 @@ mod tests {
             fn $name() {
                 let (input, expected) = $value;
                 let actual = parse_rule(input);
-                assert_eq!(expected.outer_colour, actual.outer_colour);
-                assert_eq!(expected.inner_colours.len(), actual.inner_colours.len());
+                assert_eq!(expected.bag_colour, actual.bag_colour);
+                assert_eq!(expected.inner_bags.len(), actual.inner_bags.len());
 
                 // Compare inner bags
-                let it = expected.inner_colours.iter().zip(actual.inner_colours.iter());
+                let it = expected.inner_bags.iter().zip(actual.inner_bags.iter());
                 for (_i, (x, y)) in it.enumerate() {
                     assert_eq!(x, y);
                 }
@@ -158,8 +181,8 @@ mod tests {
         rule_0: (
             "light red bags contain 1 bright white bag, 2 muted yellow bags.",
             Rule{
-                outer_colour: "light red".to_string(),
-                inner_colours: vec![
+                bag_colour: "light red".to_string(),
+                inner_bags: vec![
                     Contents{colour: "bright white".to_string(), count: 1},
                     Contents{colour: "muted yellow".to_string(), count: 2}
                 ]
@@ -168,8 +191,8 @@ mod tests {
         rule_1: (
             "dark orange bags contain 3 bright white bags, 4 muted yellow bags.",
             Rule{
-                outer_colour: "dark orange".to_string(),
-                inner_colours: vec![
+                bag_colour: "dark orange".to_string(),
+                inner_bags: vec![
                     Contents{colour: "bright white".to_string(), count: 3},
                     Contents{colour: "muted yellow".to_string(), count: 4}
                 ]
@@ -178,8 +201,8 @@ mod tests {
         rule_2: (
             "bright white bags contain 1 shiny gold bag.",
             Rule{
-                outer_colour: "bright white".to_string(),
-                inner_colours: vec![
+                bag_colour: "bright white".to_string(),
+                inner_bags: vec![
                     Contents{colour: "shiny gold".to_string(), count: 1}
                 ]
             }
@@ -187,8 +210,8 @@ mod tests {
         rule_3: (
             "muted yellow bags contain 2 shiny gold bags, 9 faded blue bags.",
             Rule{
-                outer_colour: "muted yellow".to_string(),
-                inner_colours: vec![
+                bag_colour: "muted yellow".to_string(),
+                inner_bags: vec![
                     Contents{colour: "shiny gold".to_string(), count: 2},
                     Contents{colour: "faded blue".to_string(), count: 9}
                 ]
@@ -197,8 +220,8 @@ mod tests {
         rule_4: (
             "shiny gold bags contain 1 dark olive bag, 2 vibrant plum bags.",
             Rule{
-                outer_colour: "shiny gold".to_string(),
-                inner_colours: vec![
+                bag_colour: "shiny gold".to_string(),
+                inner_bags: vec![
                     Contents{colour: "dark olive".to_string(), count: 1},
                     Contents{colour: "vibrant plum".to_string(), count: 2}
                 ]
@@ -207,8 +230,8 @@ mod tests {
         rule_5: (
             "dark olive bags contain 3 faded blue bags, 4 dotted black bags.",
             Rule{
-                outer_colour: "dark olive".to_string(),
-                inner_colours: vec![
+                bag_colour: "dark olive".to_string(),
+                inner_bags: vec![
                     Contents{colour: "faded blue".to_string(), count: 3},
                     Contents{colour: "dotted black".to_string(), count: 4}
                 ]
@@ -217,8 +240,8 @@ mod tests {
         rule_6: (
             "vibrant plum bags contain 5 faded blue bags, 6 dotted black bags.",
             Rule{
-                outer_colour: "vibrant plum".to_string(),
-                inner_colours: vec![
+                bag_colour: "vibrant plum".to_string(),
+                inner_bags: vec![
                     Contents{colour: "faded blue".to_string(), count: 5},
                     Contents{colour: "dotted black".to_string(), count: 6}
                 ]
@@ -227,15 +250,15 @@ mod tests {
         rule_7: (
             "faded blue bags contain no other bags.",
             Rule{
-                outer_colour: "faded blue".to_string(),
-                inner_colours: vec![]
+                bag_colour: "faded blue".to_string(),
+                inner_bags: vec![]
             }
         ),
         rule_8: (
             "dotted black bags contain no other bags.",
             Rule{
-                outer_colour: "dotted black".to_string(),
-                inner_colours: vec![]
+                bag_colour: "dotted black".to_string(),
+                inner_bags: vec![]
             }
         ),
     }
@@ -257,5 +280,22 @@ mod tests {
         let parsed_rules = parse_rules(test_data);
 
         assert_eq!(4, count_bags(&parsed_rules, "shiny gold"));
+    }
+
+    #[test]
+    fn test_count_inner_bags_returns_count() {
+        let test_data = vec![
+            "shiny gold bags contain 2 dark red bags.",
+            "dark red bags contain 2 dark orange bags.",
+            "dark orange bags contain 2 dark yellow bags.",
+            "dark yellow bags contain 2 dark green bags.",
+            "dark green bags contain 2 dark blue bags.",
+            "dark blue bags contain 2 dark violet bags.",
+            "dark violet bags contain no other bags.",
+        ];
+
+        let parsed_rules = parse_rules(test_data);
+
+        assert_eq!(126, count_inner_bags(&parsed_rules, "shiny gold"));
     }
 }
