@@ -1,4 +1,6 @@
 use std::{
+    error::Error,
+    fmt,
     fs::File,
     io::{self, BufRead, BufReader},
     path::Path,
@@ -29,4 +31,27 @@ impl Config {
 
 pub fn lines_from_file(filename: impl AsRef<Path>) -> io::Result<Vec<String>> {
     BufReader::new(File::open(filename)?).lines().collect()
+}
+
+#[derive(Debug)]
+struct AdventError {
+    details: String
+}
+
+impl AdventError {
+    fn new(msg: &str) -> AdventError {
+        AdventError{details: msg.to_string()}
+    }
+}
+
+impl fmt::Display for AdventError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,"{}", self.details)
+    }
+}
+
+impl Error for AdventError {
+    fn description(&self) -> &str {
+        &self.details
+    }
 }
