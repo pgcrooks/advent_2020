@@ -11,12 +11,13 @@ mod day_4;
 mod day_5;
 mod day_6;
 mod day_7;
+mod day_8;
 
 use advent::Config;
 
 fn run_help(config: Config) -> Result<(), Box<dyn Error>> {
     println!("Unrecognised day: {}", config.day);
-    println!("Current supported days: [1, 2, 3, 4, 5, 6, 7]");
+    println!("Current supported days: [1, 2, 3, 4, 5, 6, 7, 8]");
     Ok(())
 }
 
@@ -42,6 +43,7 @@ fn main() {
         5 => day_5::run,
         6 => day_6::run,
         7 => day_7::run,
+        8 => day_8::run,
         _ => run_help,
     };
 
